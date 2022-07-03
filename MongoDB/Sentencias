@@ -1,17 +1,17 @@
-/* Listar los documentos que cumplan la condición */
-db.nombreColeccion.find({cuisine: "Chinese"})
+/* FIND: Listar los documentos que cumplan la condición */
+db.nombreColeccion.find({ cuisine: "Chinese" })
 
-/*Me da la cantidad de docs que cumplen*/
-db.nombreColeccion.find({cuisine: "Chinese"}).count()
+/* COUNT: Me da la cantidad de docs que cumplen*/
+db.nombreColeccion.find({ cuisine: "Chinese" }).count()
 
-/*Mostrar solo el nombre*/
-db.nombreColeccion.find({cuisine: "Chinese"}, {name: 1, _id:0})
+/* { , }: Mostrar solo el nombre*/
+db.nombreColeccion.find({ cuisine: "Chinese" }, { name: 1, _id: 0 })
 
-/*Ver solo los 5 primeros*/
-db.nombreColeccion.find({cuisine: "Chinese"}, {name: 1, _id:0}).limit(5)
+/* LIMIT(n): Ver solo los 5 primeros*/
+db.nombreColeccion.find({ cuisine: "Chinese" }, { name: 1, _id: 0 }).limit(5)
 
-/*Ordenar por... */
-db.nombreColeccion.find({cuisine: "Chinese"}, {name: 1, _id:0}).sort({name:1})
+/* SORT({campo: -1 / 1}): Ordenar por... */
+db.nombreColeccion.find({ cuisine: "Chinese" }, { name: 1, _id: 0 }).sort({ name: 1 })
 
 /* 
 Ascendente : sort({name: 1})
@@ -19,10 +19,98 @@ Descendente: sort({name:-1})
 */
 
 
-/* Listar por docs por dos condiciones*/
-db.restaurants.find({cuisine:"Chinese",borough:"Bronx"}, {name:1, borough:1,cuisine:1,_id:01}).sort({name:-1}).limit(5)
+/* {  ,  } : Listar por docs por dos condiciones*/
+db.restaurants.find({ cuisine: "Chinese", borough: "Bronx" }, { name: 1, borough: 1, cuisine: 1, _id: 01 }).sort({ name: -1 }).limit(5)
 
- /*Saltar los 5 resultados siguientes*/
- db.restaurants.find({cuisine:"Chinese",borough:"Bronx"}, {name:1, borough:1,cuisine:1,_id:01}).sort({name:-1}).skip(5).limit(5)
+/* SKIP(n): Saltar los 5 resultados siguientes*/
+db.restaurants.find({ cuisine: "Chinese", borough: "Bronx" }, { name: 1, borough: 1, cuisine: 1, _id: 01 }).sort({ name: -1 }).skip(5).limit(5)
 
- 
+/* {$gt: numero} : Listar los documentos de la colección “restaurants” que hayan obtenido un “score” mayor a 70. */
+db.restaurants.find({ "grades.score": { $gt: 70 } }, { name: 1, grades: 1, _id: 0 })
+
+/*Para entrar a un campor que está dentro de otro campo SE USAN COMILLAS 
+Ejemplo: "grades.score" */
+
+/*Renombrar colección*/
+db.restaurants.renameCollection("Restaurantes2")
+
+/* {ELEMMATCH: {  ,  }} : que un elemento cumpla con todas las condiciones especificadas
+
+Listar los documentos de la colección “restaurants” que hayan obtenido un “score” mayor a 80 pero menor a 100 */
+db.restaurants.find({ grades: { $elemMatch: { score: { $gt: 80, $lt: 100 } } } })
+
+
+/*Entrar a docs anidados 'coleccion1.campo.campo2' */
+
+
+/* $AND: Operador para listar condiciones */
+
+/*Listar los restaurantes de comida chinese que estén en Brooklyn*/
+db.restaurants.find({ $and: [{ cuisine: "Chinese" }, { borough: "Brooklyn" }] }, { name: 1, cuisine: 1, borough: 1, _id: 0 })
+
+/*Listar los restaurantes de comida chinese que NO estén en Brooklyn*/
+db.restaurants.find({ $and: [{ cuisine: { $ne: "Chinese" } }, { borough: "Brooklyn" }] }, { name: 1, cuisine: 1, borough: 1, _id: 0 })
+
+
+/*Listar los elementos que contiene un campo en todos los documentos*/
+db.restaurants.distinct("cuisine")
+
+/* count(): cuenta documentos*/
+/*.length : sirve para contar los elementos de un arreglo. Ejemplo: */
+db.restaurants.distinct("cuisine").length
+
+
+/*AGGREGATE: tiene dos filtros ( [ { filtros $match:{} }, { agrupar $group: {} } ] )
+
+/*Indicar la cantidad de restaurantes por tipo de comida */
+db.restaurants.aggregate([{ $match: {} }, 
+                          { $group: 
+                                { _id: "$cuisine", quantity: { $count: {} } } 
+                                }
+                         ]
+                        )
+
+
+/*Proyectar en AGGREGATE: {$project: {campoA: 1, campoB: 1, _id:0}}
+Ejemplo: 
+db.movies.aggregate([
+    {$match:{
+        $and:[{year:{$gte:2000)},{year:{$lte:2004}}]}
+    },
+    {$project:{title:1,year:1,_id:0}}
+]); */
+
+
+
+db.movies.find({peliculas: {$gt: 500}}, {peliculas: 1, _id:0})
+
+db.movies.aggregate([
+    {$group:{
+                _id: "$year", quantity:  {$count: {} }
+            }
+
+    },
+    {$match:{
+        quantity: {$gte:500}
+        }
+
+    },
+    {$sort:{
+        quantity:-1
+        }
+    }
+]
+)
+
+/*Listar todos los restaurantes por barrio que venden comida peruana*/
+db.restaurants.aggregate([
+    {$match:
+       {cuisine:"Peruvian"}
+    },
+    {$group:
+       {id:{borough:"$borough"},quantity:{$count:{}}}
+    },
+    {$project:
+       {"borough":"$_id.borough",quantity:1}
+    }
+]);
