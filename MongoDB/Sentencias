@@ -1,0 +1,28 @@
+/* Listar los documentos que cumplan la condición */
+db.nombreColeccion.find({cuisine: "Chinese"})
+
+/*Me da la cantidad de docs que cumplen*/
+db.nombreColeccion.find({cuisine: "Chinese"}).count()
+
+/*Mostrar solo el nombre*/
+db.nombreColeccion.find({cuisine: "Chinese"}, {name: 1, _id:0})
+
+/*Ver solo los 5 primeros*/
+db.nombreColeccion.find({cuisine: "Chinese"}, {name: 1, _id:0}).limit(5)
+
+/*Ordenar por... */
+db.nombreColeccion.find({cuisine: "Chinese"}, {name: 1, _id:0}).sort({name:1})
+
+/* 
+Ascendente : sort({name: 1})
+Descendente: sort({name:-1})
+*/
+
+
+/* Listar por docs por dos condiciones*/
+db.restaurants.find({cuisine:"Chinese",borough:"Bronx"}, {name:1, borough:1,cuisine:1,_id:01}).sort({name:-1}).limit(5)
+
+ /*Saltar los 5 resultados siguientes*/
+ db.restaurants.find({cuisine:"Chinese",borough:"Bronx"}, {name:1, borough:1,cuisine:1,_id:01}).sort({name:-1}).skip(5).limit(5)
+
+ 
