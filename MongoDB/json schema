@@ -1,4 +1,4 @@
-use sample_upc
+//use sample_upc
 
 // Crear una colección y validar con JSON Schema
 
@@ -239,3 +239,131 @@ db.createCollection("teachers",{
  });
 
  db.teachers.insertOne({first_name: "Jorge"});
+
+
+ /*MI PROPIO JSON SCHEMA*/
+ db.createCollection(
+    "profesores",
+    {
+        validator: {
+            $jsonSchema:{
+                bsonType: "object",
+                description: "doc qyue describe a un profesor",
+                required: ["nombre", "apellido", "correo", "cursos_dictados"],
+                properties:{
+                    nombre: {
+                        bsonType: "string",
+                        minLength: 2,
+                        description: "debe ser string y es obligatorio"
+                    },
+                    apellido:{
+                        bsonType: "string",
+                        minLength: 2,
+                        description: "debe ser string y es obligatorio"
+                    },
+                    correo:{
+                        bsonType: "string",
+                        pattern: "@upc\.edu\.pe$",
+                        description: "debe ser string y es obligatorio"
+                    },
+                    cusos_dictados:{
+                        bsonType: ["array"],
+                        minItems: 1,
+                        uniqueItems: true,
+                        items: {
+                            bsonType: "object",
+                            description: "cursos que dicta el profesor",
+                            required: ["nombre", "codigo"],
+                            properties: {
+                                nombre: {
+                                    bsonType: "string",
+                                    minLength: 3,
+                                    description: "nombre del curso es string y oligatorio"
+                                },
+                                codigo: {
+                                    bsonType: "int",
+                                    minimum: 11,
+                                    description: "codigo del curso es string y oligatorio"
+                                }
+                            }
+                        }
+                    },
+                    yearIngreso: {
+                        bsonType: "int",
+                        minimum: 2005,
+                        maximum: 2022,
+                        description: "año de ingreso del profesor y no es required"
+                    },
+                    genero: {
+                        enum: ["M", "F", "NB"],
+                        description: "genero del profesor/a y no es required"
+                    }
+    
+                }
+            }
+        }}
+    )
+
+/* 
+Una empresa manufacturera produce productos. Se almacena la siguiente información del producto: nombre
+del producto, ID del producto y cantidad disponible. Estos productos se componen de muchos componentes.
+Cada componente puede ser suministrado por uno o más proveedores. Se conserva la siguiente información
+de los componentes: ID del componente, nombre, descripción, proveedores que los suministran y productos
+en los que se utilizan. 
+*/
+
+db.createCollection(
+    "productos",
+    {
+        validator: {
+            $jsonSchema:{
+                bsonType: "object",
+                description: "documento que describe a un producto",
+                required: ["nombre", "cantidad_disponible", "componentes"],
+                properties:{
+                    nombre: {
+                        bsonType: "string",
+                        minLength: 2
+                    },
+                    cantidad_disponible: {
+                        bsonType: "int"
+                    },
+                    componentes:{
+                        bsonType: ["array"],
+                        minItems: 1,
+                        uniqueItems: true,
+                        items: {
+                            bsonType: "object",
+                            required: ["nombre", "descripcion", "proveedores", "productos_uso"],
+                            properties: {
+                                nombre: {
+                                    bsonType: "string",
+                                    minLength: 3
+                                },
+                                descripcion: {
+                                    bsonType: "string"
+                                },
+                                proveedores: {
+                                    bsonType: ["array"],
+                                    minItems: 1,
+                                    uniqueItems: true,
+                                    items: { 
+                                        bsonType: "string"
+                                    }
+                                },
+                                productos_uso: {
+                                    bsonType: ["array"],
+                                    minItems: 1,
+                                    uniqueItems: true,
+                                    items: { 
+                                        bsonType: "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+    
+                }
+            }
+        }}
+    )

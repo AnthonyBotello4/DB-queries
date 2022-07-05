@@ -1,0 +1,74 @@
+//use sample_mflix
+
+db.comments.find({}, {_id:0}).limit(5)
+
+/* Buscar los comments con años mayores a 2015
+*/
+db.comments.aggregate([
+        {$project:
+            {year: {$year: "$date"}}
+        },
+        {$match:
+            {year:{$gt: 2015}}
+        }
+])
+
+db.movies.find()
+
+/*Buscar comentarios que contengan string Id*/
+db.comments.find({text: {$regex: "Id"}}, {_id: 0, text:1})
+
+/* Buscar películas que contengan al país Peru  */
+db.movies.find({countries: "Peru"}, {_id:0, countries:1})
+
+/* Cantidad de películas que contiene a un país */
+
+/*Cantidad de peliulas que no son movies*/
+db.movies.find({type: {$ne: "movie"}},{type: 1, _id:0})
+
+/*Cantidad de series por tipo*/
+db.movies.aggregate([
+        {$group:
+            {_id: {type: "$type"}, quantity: {$count: {}}}
+        },
+        {$project:
+           /* {_id:1, quantity:1} */
+           {"type": "$_id.type", quantity: 1, _id:0}
+        }
+])
+
+/*Cantidad de peliculas por año */
+db.movies.aggregate([
+    {$group:
+        {_id: {year: "$year"}, quantity: {$count:{}}}
+    },
+    {$project:
+        {"year": "$_id.year", quantity:1,_id: 0}
+    },
+    {$sort: {year: 1}
+
+    }
+])
+
+
+/*El nombre de las películas que tuvieron más de 5 puntos de rating en tomatoes*/
+db.movies.find(
+    {"tomatoes.viewer.rating": {$gt: 4.0}},
+    {_id:0, "tomatoes.viewer.rating":1, title: 1},
+
+)
+
+/* Buscar películas que contengan al país Peru ordenadas por año */
+/*Usando find*/
+db.movies.find({countries: "Peru"}, {_id:0, title:1, countries:1, year: 1}).sort({year: -1}).count()
+/*Usando aggregate*/
+db.movies.aggregate([
+    {$match:
+        {countries: "Peru"}
+    },
+    {$group:
+        {_id: "$year", quantity: {$count:{}}}
+    }
+]).count()
+/*Comprobación de sentencia anterior*/
+db.movies.find({$and: [{year: 2004}, {countries: "Peru"} ]}, {_id:0, title: 1, year:1})

@@ -114,3 +114,32 @@ db.restaurants.aggregate([
        {"borough":"$_id.borough",quantity:1}
     }
 ]);
+
+/*Otras sentencias*/
+//use testing
+db.restaurants.find({}, {_id:0, "grades.date":1});
+db.restaurants.find({"grades.date":{$year: "$grades.date"}} );
+
+db.restaurants.aggregate([
+    {$project:
+        {
+            _id: "$name",
+            year: "$grades.date"
+        }
+    }
+
+
+]);
+
+//use testing
+db.restaurants.aggregate([
+    {$match:
+       {cuisine:"Chinese"}
+    },
+    {$group:
+       {_id:{borough:"$borough"},quantity:{$count:{}}}
+    },
+    {$project:
+       {"borough":"$_id.borough",quantity:1}
+    }
+]);
